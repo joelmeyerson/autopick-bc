@@ -41,14 +41,17 @@ def gen_model():
     parser.add_argument('-s', '--skiptraining', action='store_true', help='skip training and just run inference')
     args = parser.parse_args()
     
-    # create working directory
+    # create directory structure
     work_dir = args.projpath
-    data_dir = args.projpath + '/ClassBin'
-    train_dir = args.projpath + '/ClassBin/train'
-    test_dir = args.projpath + '/ClassBin/test'
+    if work_dir.endswith('/'):
+        work_dir = work_dir.rstrip('/')
+    
+    data_dir = work_dir + '/ClassBin'
+    train_dir = work_dir + '/ClassBin/train'
+    test_dir = work_dir + '/ClassBin/test'
     if os.path.exists(data_dir) == False:
         os.mkdir(data_dir)
-    
+
     # extract box size, box apix, and original image apix
     meta_good = extract_star_meta.extract(args.stargood)
     meta_bad = extract_star_meta.extract(args.starbad)
@@ -192,7 +195,8 @@ def gen_model():
     ]
 
     if args.skiptraining != True:
-        model.fit(
+        # fit model to data and save training and validation history
+        history = model.fit( 
             train_ds,
             epochs=50,
             callbacks=callbacks,
@@ -202,66 +206,84 @@ def gen_model():
     else:
         model = tf.keras.models.load_model(data_dir + '/autopick-bc-model.h5')
     
-    target_dir = test_dir + '/bad'
-    files = os.listdir(target_dir)
-    count = 0
-    for f in files:
-        img = keras.preprocessing.image.load_img(
-            target_dir + '/' + f, target_size=image_size, color_mode="grayscale"
-        )
-        img_array = keras.preprocessing.image.img_to_array(img)
-        img_array = tf.expand_dims(img_array, 0)  # Create batch axis
-
-        predictions = model.predict(img_array)
-        score = predictions[0]
-        score_rnd = int(score.round())
-        if score_rnd == 0:
-            count = count + 1
-         
-    file_bad = len(files)   
-    bad_correct = count
-    
-    target_dir = test_dir + '/good'
-    files = os.listdir(target_dir)
-    count = 0
-    for f in files:
-        img = keras.preprocessing.image.load_img(
-            target_dir + '/' + f, target_size=image_size, color_mode="grayscale"
-        )
-        img_array = keras.preprocessing.image.img_to_array(img)
-        img_array = tf.expand_dims(img_array, 0)  # Create batch axis
-
-        predictions = model.predict(img_array)
-        score = predictions[0]
-        score_rnd = int(score.round())
-        if score_rnd == 1:
-            count = count + 1
-
-    files_total = file_bad + len(files)   
-    total_correct = bad_correct + count
-    
-    print(total_correct)
-    print(files_total)
-    print((total_correct/files_total)*100)
-    
-        #print(f + " = " + str(score.round()))
-        # print(
-#             "This image is %.2f percent cat and %.2f percent dog."
-#             % (100 * (1 - score), 100 * score)
-#         )
-        
-    # # run inference
-#     predictions = model.predict_classes(
-#         test_ds,
-#         batch_size=batch_size,
-#         verbose=1
-#     )
-#     #predictions = predictions.round()
-#     labels = np.concatenate([y for x, y in test_ds], axis=0)
-#     labels = np.reshape(labels,(-1,1)) # add an index to the array
+    # run prediction with test data
+    # each batch in the test dataset is a tuple with two elements
+    # element 0 is tuple with (batch_size, box, box, 1)
+    # element 1 is tuple with (batch_size, 1)
+    batch_labels = []
+    batch_data = []
+    num_correct = 0
+    num_test_images = 0
+    # for batch in test_ds:
+#         #print(len(batch))
+#         batch_data = batch[0]
+#         batch_labels = batch[1]
+#         batch_labels = np.array(batch_labels[:,0]) # convert tuple to array
+#         #print(np.shape(batch_data))
+#         #print(np.shape(batch_labels))
 #
-#     results = np.hstack((predictions, labels))
-#     print(sum(abs(results[:,0]-results[:,1])))
+#         predictions = model.predict(batch_data)
+#         predictions = abs(predictions.round())
+#         predictions = np.array(predictions[:,0]) # convert tuple to array
+#
+#         num_correct += sum(predictions == batch_labels)
+#         num_test_images += len(batch_labels)
+#
+#     print((num_correct / num_test_images) * 100)
+    print(history.history)
+    # predictions = np.array([])
+#     labels =  np.array([])
+#     for x, y in test_ds:
+#          predictions = np.concatenate([predictions, np.argmax(model.predict(x), axis = -1)])
+#          labels = np.concatenate([labels, np.argmax(y.numpy(), axis=-1)])
+#
+#     tf.math.confusion_matrix(labels=labels, predictions=predictions).numpy()
+    
+    
+    
+    
+    # target_dir = test_dir + '/bad'
+    # files = os.listdir(target_dir)
+    # count = 0
+    # for f in files:
+    #     img = keras.preprocessing.image.load_img(
+    #         target_dir + '/' + f, target_size=image_size, color_mode="grayscale"
+    #     )
+    #     img_array = keras.preprocessing.image.img_to_array(img)
+    #     img_array = tf.expand_dims(img_array, 0)  # Create batch axis
+    #
+    #     predictions = model.predict(img_array)
+    #     score = predictions[0]
+    #     score_rnd = int(score.round())
+    #     if score_rnd == 0:
+    #         count = count + 1
+    #
+    # file_bad = len(files)
+    # bad_correct = count
+    #
+    # target_dir = test_dir + '/good'
+    # files = os.listdir(target_dir)
+    # count = 0
+    # for f in files:
+    #     img = keras.preprocessing.image.load_img(
+    #         target_dir + '/' + f, target_size=image_size, color_mode="grayscale"
+    #     )
+    #     img_array = keras.preprocessing.image.img_to_array(img)
+    #     img_array = tf.expand_dims(img_array, 0)  # Create batch axis
+    #
+    #     predictions = model.predict(img_array)
+    #     score = predictions[0]
+    #     score_rnd = int(score.round())
+    #     if score_rnd == 1:
+    #         count = count + 1
+    #
+    # files_total = file_bad + len(files)
+    # total_correct = bad_correct + count
+    #
+    # print(total_correct)
+    # print(files_total)
+    # print((total_correct/files_total)*100)
+   
   
 if __name__ == "__main__":
    gen_model()
