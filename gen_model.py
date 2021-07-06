@@ -4,10 +4,12 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import random
+import json
 
 # TF imports
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras import metrics
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, BatchNormalization
 from tensorflow.keras.layers import Activation, Flatten, Dense, Dropout
@@ -15,6 +17,7 @@ from tensorflow.keras.layers import Activation, Flatten, Dense, Dropout
 # local imports
 import extract_star_meta
 import extract_particles
+import save_results
 
 # disable GPU
 # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -183,7 +186,16 @@ def gen_model():
     model.compile(
         loss='binary_crossentropy',
         optimizer=keras.optimizers.Adam(0.00005),
-        metrics=['accuracy']
+        metrics = [
+            keras.metrics.BinaryAccuracy(name='accuracy'),
+            keras.metrics.TruePositives(name='tp'),
+            keras.metrics.FalsePositives(name='fp'),
+            keras.metrics.TrueNegatives(name='tn'),
+            keras.metrics.FalseNegatives(name='fn'),
+            keras.metrics.Precision(name='precision'),
+            keras.metrics.Recall(name='recall'),
+            keras.metrics.AUC(name='auc')
+        ]
     )
     
     # callbacks
@@ -202,9 +214,16 @@ def gen_model():
             callbacks=callbacks,
             validation_data=val_ds
         )
-        model.save(data_dir + '/autopick-bc-model.h5')
+        model.save(data_dir + '/model.h5')
+        
+        # save log of error and accuracy per epoch (dict)
+        with open(data_dir + "/training_log.txt", "w") as text_file:
+            text_file.write(json.dumps(history.history))
     else:
-        model = tf.keras.models.load_model(data_dir + '/autopick-bc-model.h5')
+        try:
+            model = tf.keras.models.load_model(data_dir + '/model.h5')
+        except:
+            print("No model found. Must run training.")
     
     # run prediction with test data
     # each batch in the test dataset is a tuple with two elements
@@ -212,78 +231,32 @@ def gen_model():
     # element 1 is tuple with (batch_size, 1)
     batch_labels = []
     batch_data = []
-    num_correct = 0
-    num_test_images = 0
-    # for batch in test_ds:
-#         #print(len(batch))
-#         batch_data = batch[0]
-#         batch_labels = batch[1]
-#         batch_labels = np.array(batch_labels[:,0]) # convert tuple to array
-#         #print(np.shape(batch_data))
-#         #print(np.shape(batch_labels))
-#
-#         predictions = model.predict(batch_data)
-#         predictions = abs(predictions.round())
-#         predictions = np.array(predictions[:,0]) # convert tuple to array
-#
-#         num_correct += sum(predictions == batch_labels)
-#         num_test_images += len(batch_labels)
-#
-#     print((num_correct / num_test_images) * 100)
-    print(history.history)
-    # predictions = np.array([])
-#     labels =  np.array([])
-#     for x, y in test_ds:
-#          predictions = np.concatenate([predictions, np.argmax(model.predict(x), axis = -1)])
-#          labels = np.concatenate([labels, np.argmax(y.numpy(), axis=-1)])
-#
-#     tf.math.confusion_matrix(labels=labels, predictions=predictions).numpy()
-    
-    
-    
-    
-    # target_dir = test_dir + '/bad'
-    # files = os.listdir(target_dir)
-    # count = 0
-    # for f in files:
-    #     img = keras.preprocessing.image.load_img(
-    #         target_dir + '/' + f, target_size=image_size, color_mode="grayscale"
-    #     )
-    #     img_array = keras.preprocessing.image.img_to_array(img)
-    #     img_array = tf.expand_dims(img_array, 0)  # Create batch axis
-    #
-    #     predictions = model.predict(img_array)
-    #     score = predictions[0]
-    #     score_rnd = int(score.round())
-    #     if score_rnd == 0:
-    #         count = count + 1
-    #
-    # file_bad = len(files)
-    # bad_correct = count
-    #
-    # target_dir = test_dir + '/good'
-    # files = os.listdir(target_dir)
-    # count = 0
-    # for f in files:
-    #     img = keras.preprocessing.image.load_img(
-    #         target_dir + '/' + f, target_size=image_size, color_mode="grayscale"
-    #     )
-    #     img_array = keras.preprocessing.image.img_to_array(img)
-    #     img_array = tf.expand_dims(img_array, 0)  # Create batch axis
-    #
-    #     predictions = model.predict(img_array)
-    #     score = predictions[0]
-    #     score_rnd = int(score.round())
-    #     if score_rnd == 1:
-    #         count = count + 1
-    #
-    # files_total = file_bad + len(files)
-    # total_correct = bad_correct + count
-    #
-    # print(total_correct)
-    # print(files_total)
-    # print((total_correct/files_total)*100)
-   
-  
+    labels = []
+    predictions = []
+    for batch in test_ds:
+        #print(len(batch))
+        batch_data = batch[0]
+        batch_labels = batch[1]
+        batch_labels = np.array(batch_labels[:,0]) # convert tuple to array
+        #print(np.shape(batch_data))
+        #print(np.shape(batch_labels))
+
+        batch_pred = model.predict(batch_data)
+        batch_pred = abs(batch_pred.round())
+        batch_pred = np.array(batch_pred[:,0]) # convert tuple to array
+        
+        # store batch labels and batch predictions
+        labels = np.concatenate([labels, batch_labels])
+        labels = labels.astype(int)
+        predictions = np.concatenate([predictions, batch_pred])
+        predictions = predictions.astype(int)
+        
+        # save log of labels and predictions
+        with open(data_dir + "/testing_results.txt", "w") as text_file:
+            text_file.write(json.dumps({"labels":labels.tolist(), "predictions":predictions.tolist()}))
+        
+    # make summary of training and test results (png)
+    #save_results.make_summary(data_dir, history.history, labels, predictions)
+
 if __name__ == "__main__":
    gen_model()
