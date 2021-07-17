@@ -34,7 +34,7 @@ def extract(projpath, starfile, train_dir, test_dir, good_or_bad):
     train_fraction = round(num_file * 0.8)
     
     # create progress bar
-    bar = Bar('Extracting ' + good_or_bad + ' particles:', fill='#', suffix='%(percent)d%%', max=num_file)
+    bar = Bar('Extracting ' + str(num_file) + ' ' + good_or_bad + ' particles:', fill='#', suffix='%(percent)d%%', max=num_file)
     
     # extract each particle from its MRC stack and convert to PNG
     for i in range(num_file):

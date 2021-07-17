@@ -9,7 +9,7 @@ CONTRAST_FACTOR = 4
 CIRCLE_LINE_WIDTH = 10
 BIN_FACTOR = 2
 
-def gen_coord_display():
+def gen_picks_display():
 
     # parse arguments
     parser = argparse.ArgumentParser(description='Generate overlay of coordinates on image.')
@@ -67,4 +67,4 @@ def gen_coord_display():
     mrc.close()
 
 if __name__ == "__main__":
-   gen_coord_display()
+   gen_picks_display()

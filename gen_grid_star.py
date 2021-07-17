@@ -10,32 +10,45 @@ from PIL import Image
 from progress.bar import Bar
 
 # local imports
-import extract_star_meta
+from support_modules import extract_star_meta
 
-def gen_grid():
+def gen_grid_star():
     
     # parse arguments
-    parser = argparse.ArgumentParser(description='Extract segments from images using sliding window.')
+    parser = argparse.ArgumentParser(description='Extract segments (boxes) from images in a grid pattern using sliding window.')
     parser.add_argument('-p', '--projpath', type=str, help='path for project', required=True)
-    parser.add_argument('-i', '--imagestar', type=str, help='micrograph star file (corrected_micrographs.star (if binned), micrograph.star, micrograph_ctf.star)', required=True)
-    parser.add_argument('-m', '--metastar', type=str, help='particle star file containing target box size', required=True)
-    #parser.add_argument('-x', '--boxsize', type=str, help='star file with particles; used to extract box size', required=False)
+    parser.add_argument('-i', '--imagestar', type=str, help='micograph.star or micrograph_ctf.star for the target micrographs)', required=True)
+    #parser.add_argument('-m', '--metastar', type=str, help='any particle star file containing the target box size', required=True)
+    parser.add_argument('-x', '--boxsize', type=int, help='box size (must match box size used for training/testing.)', required=True)
     args = parser.parse_args()
     
-    # create working directory
+    # configure working directory
     work_dir = args.projpath
-    data_dir = args.projpath + '/ClassBin'
-    grid_dir = args.projpath + '/ClassBin/grid_coordinate_star_files'
-    
-    if os.path.exists(data_dir) == False:
-        os.mkdir(data_dir)
+    if work_dir.endswith('/'):
+        work_dir = work_dir.rstrip('/')
         
-    if os.path.exists(grid_dir) == False:
-        os.mkdir(grid_dir)
+    data_dir = args.projpath + '/ClassBin'
+    micro_dir = args.projpath + '/Micrographs'
     
-    # extract box size, box apix, and original image apix
-    meta = extract_star_meta.extract(args.metastar)
-    box = int(meta[0])
+    if (os.path.exists(micro_dir) == False):
+        print("\nMicrographs directory not found, but needed to store star file output. Exiting.")
+        exit()
+        
+    if (os.path.exists(micro_dir) == True):
+        print("\nMicrographs directory found. Confirm if _grid.star files can be written to Micrographs directory (y/n)")
+        yn = input()
+        if yn == 'n':
+            print("\nExiting without writing _grid.star files.")
+        elif yn == 'y':
+            pass
+        else:
+            print("\nInvalid selection. Exiting")
+            exit()
+        
+    # get box size
+    #meta = extract_star_meta.extract(args.metastar)
+    #box = int(meta[0])
+    box = args.boxsize
     
     # extract name of image stack and index for image slice
     files = [] # store files in array
@@ -67,7 +80,7 @@ def gen_grid():
     dimz = header.nz
     
     if dimz > 1:
-        print("STAR file must contain flat images not movie stacks. Exiting.")
+        print("\nSTAR file must contain flat images not movie stacks. Exiting.")
         exit()
 
     lines = []
@@ -96,8 +109,10 @@ def gen_grid():
     
     # write coordinate star file for each micrograph
     for f in files:
-        with open(grid_dir + '/' + f[1] + "_manualpick.star", "w") as starfile:
+        with open(micro_dir + '/' + f[1] + "_grid.star", "w") as starfile:
            starfile.writelines("%s\n" % l for l in lines)
  
+    print("\nSuccessfully generated _grid.star files in Micrographs directory.")
+    
 if __name__ == "__main__":
-    gen_grid()
+    gen_grid_star()
