@@ -1,6 +1,6 @@
 # Autopick-BC
 
-Classification module for protein image detection in cryo-EM data implemented using Keras/Tensorflow.
+Classification module for protein image detection in cryo-EM data.
 
 ## Modules
 
