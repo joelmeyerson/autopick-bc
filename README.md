@@ -40,7 +40,7 @@ The parent image is the `tensorflow:latest-gpu` image. The Dockerfile specifies 
 	cd autopick-bc/docker # directory with Dockerfile 
 	docker build -t apbc . # builds container called apbc
 	cd <relion-project> # where <relion-project> is the path to the Relion project directory
-	docker run --gpus all --rm -ti -v $(pwd):<relion-project> apbc # launches the apbc container in interactive move
+	docker run --gpus all --rm -ti -v $(pwd):<relion-project> apbc # launch interactive apbc container
 	cd <relion-project>
 	conda activate apbc # activate the Autopick-BC conda environment
 
@@ -49,14 +49,14 @@ The parent image is the `tensorflow:latest-gpu` image. The Dockerfile specifies 
 If running locally it`s best to use GPUs and an up-to-date Nvidia driver.
 
 	git clone https://github.com/joelmeyerson/autopick-bc.git # clone the repository
-	conda create --name apbc --file requirements.txt # create conda environment apbc and install packages
+	conda create --name apbc --file requirements.txt # create conda environment and install packages
 	bash -x -e build.sh # set up conda environment
 	conda activate apbc # activate the Autopick-BC conda environment
 	cd <relion-project> # where <relion-project> is the path to the Relion project directory
 
 If installation fails using requirements.txt then it can be done with the included script.
 
-	bash autopick-bc/conda/create-conda-env.sh # create conda environment apbc and install packages
+	bash autopick-bc/conda/create-conda-env.sh # create conda environment and install packages
 
 ### Training and testing with manually labeled Beta-galactosidase data
 
