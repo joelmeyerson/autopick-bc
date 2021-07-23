@@ -129,10 +129,11 @@ def gen_model():
     model.add(BatchNormalization())
     model.add(Activation('relu'))
 
-    # model.add(MaxPooling2D(pool_size=(2,2),strides=2))
-#     model.add(Conv2D(filters=128,kernel_size=(2,2),strides=(1,1),padding='valid'))
-#     model.add(BatchNormalization())
-#     model.add(Activation('relu'))
+    #model.add(MaxPooling2D(pool_size=(2,2),strides=2))
+    #model.add(Conv2D(filters=128,kernel_size=(2,2),strides=(1,1),padding='valid'))
+    #model.add(BatchNormalization())
+    #model.add(Activation('relu'))
+    #test
 
     model.add(MaxPooling2D(pool_size=(2,2),strides=2))
     model.add(Flatten())

@@ -51,13 +51,12 @@ def gen_picks():
         exit()
 
     # from star file extract x coord, y coord, particle stack name, particle stack index for each particle
-    header = star_head(args.imagestar)
     data_cols = star_columns(args.imagestar)
     data = star_data(args.imagestar)
     
     # create good and bad star file
-    star_good = header
-    star_bad = header
+    star_good = star_head(args.imagestar)
+    star_bad = star_head(args.imagestar)
     
     # get index to reference the mrc slice@stack in data
     mrc_stack_idx = data_cols.index('_rlnImageName')
@@ -78,29 +77,34 @@ def gen_picks():
         batch_num += 1
 
     batch_star = [] # for each batch store the lines for particle star file (32 entries)
+    
+    # create progress bar
+    bar = Bar('\nProcessing ' + str(par_cnt) + ' samples in ' + str(batch_num) + ' batches:', fill='#', suffix='%(percent)d%%', max=batch_num)
 
     # each round of loop will predict on a batch
     for batch_cnt in range(0,batch_num):
         # set metadata range for current batch
         if ((batch_cnt == batch_num-1) and (batch_fragment_size > 0)):
             start = batch_size*(batch_cnt)
-            end = start + batch_fragment_size
+            end = start + batch_fragment_size - 1
 
         else:
             start = batch_size*(batch_cnt)
-            end = start + batch_size
+            end = start + batch_size - 1
 
-        batch_star = data[start:end] # xcoord, ycoord, particle name, and slice for all particles in a batch
+        batch_star = data[start:end + 1] # xcoord, ycoord, particle name, and slice for all particles in a batch
+        # NOTE: python list indexing is not inclusive, so need to extend the end point by one in above statement
 
         # load mrc batch into array
         batch_img = np.zeros(shape=(len(batch_star),box,box,1)) # for each batch store the image batch (32 entries, or fewer for final batch)
         loader_cnt = 0
-        
+
         for sample in batch_star: # each "sample" is a row in the star file
 
-            mrc_slice = int(sample[mrc_stack_idx].split("@")[0].lstrip("0"))
+            mrc_slice = int(sample[mrc_stack_idx].split("@")[0].lstrip("0")) - 1
             mrc_stack = sample[mrc_stack_idx].split("@")[1]
             mrc = mrcfile.open(mrc_stack, mode=u'r', permissive=False, header_only=False)
+
             img = np.flip(mrc.data[:, :])
             img = np.flip(mrc.data[mrc_slice, :, :], axis=0)
             img = img + abs(img.min()) # make all 32 bit floating point pixel values >= 0
@@ -109,7 +113,7 @@ def gen_picks():
 
             batch_img[loader_cnt,:,:,0] = img
             loader_cnt += 1
-        
+
         # predict on batch
         batch_pred = model.predict(batch_img)
         batch_pred = abs(batch_pred.round())
@@ -117,17 +121,25 @@ def gen_picks():
 
         # update star arrays
         pos_idx = np.argwhere(batch_pred==1).flatten()
-        for idx in pos_idx:
-            star_good.append(batch_star[idx])
-        
+        for p in pos_idx:
+            star_good.append(batch_star[p])
+
         neg_idx = np.argwhere(batch_pred==0).flatten()
-        for idx in neg_idx:
-            star_bad.append(batch_star[idx])
-    
+        for n in neg_idx:
+            star_bad.append(batch_star[n])
+
+        bar.next()
+
     # write good and bad particle star files to disk
-    star_write(args.imagestar, star_good, "good")
-    star_write(args.imagestar, star_bad, "bad")
-        
+    bar.finish()
+    star_fname_good = star_write(args.imagestar, star_good, "good")
+    star_fname_bad = star_write(args.imagestar, star_bad, "bad")
+
+    print("\nResults written to the star files:\n")
+    print(star_fname_good)
+    print(star_fname_bad)
+    print("")
+
 # extract header from particles.star and store in list
 def star_head(star):
     
@@ -163,7 +175,8 @@ def star_columns(star):
                 tag = str(line.split()[0]) # e.g. "_rlnCoordinateX"
                 #num = int(str(line.split()[1]).strip("#")) # e.g. "1"
                 cols.append(tag)
-    
+
+# extract data in star file (all lines with @ symbol)
 def star_data(star):
     
     data = []
@@ -176,14 +189,19 @@ def star_data(star):
     
     return data
 
-def star_update(star, par):
-    
-    star.append(par)
-    return star
-    
+# write results to good and bad star files
 def star_write(star_file, star_array, goodbad):
-    with open(os.path.splitext(str(star_file))[0] + "_" + goodbad + ".star", "w") as starfile:
-       starfile.writelines("%s" % l for l in star_array)
     
+    fname = os.path.splitext(str(star_file))[0] + "_" + goodbad + ".star"
+    with open(fname, "w") as starfile:
+        
+        for line in star_array:
+            if re.search(r'@', '\t'.join(line)): # this is a data entry which needs to be converted from array to tab-delimited string
+                starfile.writelines("%s\n" % '\t'.join(line))
+            else:
+                starfile.writelines("%s" % line) # this is part of the header where each line is already a string
+    
+    return fname
+       
 if __name__ == "__main__":
    gen_picks()
