@@ -130,10 +130,10 @@ def gen_picks():
 
         bar.next()
 
-    # write good and bad particle star files to disk
+    # write true and false particle star files to disk
     bar.finish()
-    star_fname_good = star_write(args.imagestar, star_good, "good")
-    star_fname_bad = star_write(args.imagestar, star_bad, "bad")
+    star_fname_good = star_write(args.imagestar, star_good, "true")
+    star_fname_bad = star_write(args.imagestar, star_bad, "false")
 
     print("\nResults written to the star files:\n")
     print(star_fname_good)
@@ -189,10 +189,10 @@ def star_data(star):
     
     return data
 
-# write results to good and bad star files
-def star_write(star_file, star_array, goodbad):
+# write results to true and false star files
+def star_write(star_file, star_array, tf):
     
-    fname = os.path.splitext(str(star_file))[0] + "_" + goodbad + ".star"
+    fname = os.path.splitext(str(star_file))[0] + "_" + tf + ".star"
     with open(fname, "w") as starfile:
         
         for line in star_array:
