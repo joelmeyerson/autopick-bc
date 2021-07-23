@@ -6,7 +6,7 @@ Classification module for protein image detection in cryo-EM data. The project u
 
 Single particle cryo-EM datasets contain large format images with hundreds of individual proteins in different orientations (particles). The particles must be segmented from the images for further processing and structure determination. This is typically done using an LoG filter or using template matching with a low-pass filtered structural model. Segmentation (autopicking) typically produces many false positives and missed proteins. The false positives are removed during the next stage of processing which is 2D classification and averaging of particles. This 2D analysis step yields a collection of class averages which are manually designated as "good" or "bad". Particles composing the good classes are retained for further analysis, and particles from the bad classes are discarded.
 
-Autopick-BC is designed as an additional step in a cryo-EM image processing pipeline. Rather than discarding the bad particles, it uses both the bad and good particles from 2D class averaging to train a binary classifier. After training, the classifier is used to re-pick particles from the original images to identify good and bad particles. The rationale is that the approach will increase recovery of true positive particles and later improve 3D structural results.
+Autopick-BC is designed as an additional step in a cryo-EM image processing pipeline. Rather than discarding the bad particles, it uses both the bad and good particles from 2D class averaging to train a binary classifier. After training, the classifier is used to re-pick particles from the original images to identify true and false particles. The rationale is that the approach will increase recovery of true positive particles and later improve 3D structural results.
 
 ### Procedure
 
@@ -24,11 +24,11 @@ Autopick-BC was designed to be incorporated in any new or existing Relion projec
 
 6. For each image in the dataset use a sliding window to tile the image into samples. The output is one `grid.star` for each image in the dataset. Each star files contains the same XY coordinates which are arranged in grid pattern produced by the sliding window. This step uses `gen_grid.py`.
 
-7. Segment each image in the dataset with coordinates specificied in the `grid.star` files. The output is one "stack" of image segments for each input image and a single "particles.star" file that indexes the image stacks. This step uses Relion to read the `grid.star` files and extract CTF corrected segments.
+7. Segment each image in the dataset with coordinates specificied in the `grid.star` files. The output is one "stack" of image segments for each input image and a single `particles.star` file that indexes the image stacks. This step uses Relion to read the `grid.star` files and extract CTF corrected segments.
 
-8. Each segment listed in the "particles.star" file is provided to the classifier model predict whether it contains a particle or not. Segments are classified in batches. The outputs are "particles_true.star" and "particles_false.star". This step uses the `gen_picks.py` module.
+8. Each segment listed in the `particles.star` file is provided to the classifier model predict whether it contains a particle or not. Segments are classified in batches. The outputs are `particles_true.star` and `particles_false.star`. This step uses the `gen_picks.py` module.
 
-9. The results can be visualized using `show_picks.py` which generates an overlay of XY coordinates for the "true" or "false" classes on the cryo-EM image.
+9. The results can be visualized using `show_picks.py` which generates an overlay of XY coordinates for the true or false classes on the cryo-EM image.
 
 10. The "particles_true.star" file can be directly used for structure determination with Relion or CryoSparc.
 
@@ -36,27 +36,27 @@ Autopick-BC was designed to be incorporated in any new or existing Relion projec
 
 The parent image is the `tensorflow:latest-gpu` image. The Dockerfile specifies the additional Conda packages needed for Autopick-BC, and sets up a Conda env.
 
-	`git clone https://github.com/joelmeyerson/autopick-bc.git` # clone the repository
-	`cd autopick-bc/docker` # directory with Dockerfile 
-	`docker build -t apbc .` # builds container called `apbc`
-	`cd <relion-project>` # where `relion-project` is the path to the Relion project directory
-	`docker run --gpus all --rm -ti -v $(pwd):<relion-project> apbc` # launches the `apbc` container in interactive move
-	`cd <relion-project>`
-	`conda activate apbc` # activate the Autopick-BC conda environment
+	git clone https://github.com/joelmeyerson/autopick-bc.git # clone the repository
+	cd autopick-bc/docker # directory with Dockerfile 
+	docker build -t apbc . # builds container called apbc
+	cd <relion-project> # where <relion-project> is the path to the Relion project directory
+	docker run --gpus all --rm -ti -v $(pwd):<relion-project> apbc # launches the apbc container in interactive move
+	cd <relion-project>
+	conda activate apbc # activate the Autopick-BC conda environment
 
 ### Running with local installation
 
 If running locally it`s best to use GPUs and an up-to-date Nvidia driver.
 
-	`git clone https://github.com/joelmeyerson/autopick-bc.git` # clone the repository
-	`conda create --name apbc --file requirements.txt` # create conda environment `apbc` and install packages
-	`bash -x -e build.sh` # set up conda environment
-	`conda activate apbc` # activate the Autopick-BC conda environment
-	`cd <relion-project>` # where `relion-project` is the path to the Relion project directory
+	git clone https://github.com/joelmeyerson/autopick-bc.git # clone the repository
+	conda create --name apbc --file requirements.txt # create conda environment apbc and install packages
+	bash -x -e build.sh # set up conda environment
+	conda activate apbc # activate the Autopick-BC conda environment
+	cd <relion-project> # where <relion-project> is the path to the Relion project directory
 
 If installation fails using requirements.txt then it can be done with the included script.
 
-	`bash autopick-bc/conda/create-conda-env.sh` # create conda environment `apbc` and install packages
+	bash autopick-bc/conda/create-conda-env.sh # create conda environment apbc and install packages
 
 ### Training and testing with manually labeled Beta-galactosidase data
 
