@@ -4,8 +4,6 @@
 FROM tensorflow/tensorflow:latest-gpu
 SHELL ["/bin/bash", "-c"]
 WORKDIR /app
-#COPY ./container-entrypoint.sh /app
-#COPY ./script.py /app
 ENV PATH="/opt/miniconda/bin:${PATH}"
 ENV CONDAENV="apbc"
 
