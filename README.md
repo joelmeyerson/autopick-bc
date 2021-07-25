@@ -24,13 +24,13 @@ Autopick-BC was designed to be incorporated in any new or existing Relion projec
 
 6. For each image in the dataset use a sliding window to tile the image into samples. The output is one `grid.star` for each image in the dataset. Each star files contains the same XY coordinates which are arranged in grid pattern produced by the sliding window. This step uses `gen_grid.py`.
 
-7. Segment each image in the dataset with coordinates specificied in the `grid.star` files. The output is one "stack" of image segments for each input image and a single `particles.star` file that indexes the image stacks. This step uses Relion to read the `grid.star` files and extract CTF corrected segments.
+7. Segment each image in the dataset with coordinates specificied in the `grid.star` files. The output is one set (stack) of image segments for each input image and a single `particles.star` file that indexes the image stacks. This step uses Relion to read the `grid.star` files and extract CTF corrected segments.
 
 8. Each segment listed in the `particles.star` file is provided to the classifier model predict whether it contains a particle or not. Segments are classified in batches. The outputs are `particles_true.star` and `particles_false.star`. This step uses the `gen_picks.py` module.
 
 9. The results can be visualized using `show_picks.py` which generates an overlay of XY coordinates for the true or false classes on the cryo-EM image.
 
-10. The "particles_true.star" file can be directly used for structure determination with Relion or CryoSparc.
+10. The `particles_true.star` file can be directly used for structure determination with Relion or CryoSparc.
 
 ### Running with Docker
 
@@ -38,11 +38,9 @@ The parent image is the `tensorflow:latest-gpu` image. The Dockerfile specifies 
 
 `git clone https://github.com/joelmeyerson/autopick-bc.git` # clone the repository
 
-`cd autopick-bc/docker` # directory with Dockerfile 
+`docker build -t apbc ./autopick-bc/docker` # builds container called apbc
 
-`docker build -t apbc .` # builds container called apbc
-
-`cd <relion-project>` # where <relion-project> is the path to the Relion project directory
+`cd < relion-project >` # where < relion-project > is the path to the Relion project directory
 
 `docker run --gpus all --rm -ti -v $(pwd):<relion-project> apbc` # launch interactive container
 
@@ -56,13 +54,16 @@ If running locally it`s best to use GPUs and an up-to-date Nvidia driver.
 
 `git clone https://github.com/joelmeyerson/autopick-bc.git # clone the repository
 
+`echo 'export PATH=$PATH:< autopick-bc >' >> ~/.bashrc` # where < autopick-bc > is the path to the Autopick-BC directory
+
 `conda create --name apbc --file requirements.txt` # create conda environment, install packages
 
 `bash -x -e build.sh` # set up conda environment
 
 `conda activate apbc` # activate the Autopick-BC conda environment
 
-`cd <relion-project>` # where <relion-project> is the path to the Relion project directory
+`cd < relion-project >` # where < relion-project > is the path to the Relion project directory
+
 
 If installation fails using requirements.txt then it can be done with the included script.
 
@@ -71,3 +72,12 @@ If installation fails using requirements.txt then it can be done with the includ
 ### Training and testing with manually labeled Beta-galactosidase data
 
 The Scheres lab Beta-galactosidase dataset (EMPIAR-10017) was used for development and testing. All the images in the dataset were manually labeled with positive labels (particles) and negative labels (ice chunks, carbon, empty areas). Labels are stored in the `.box` format and found in the `autopick-bc/beta-galactosidase` directory.
+
+### Results with Beta-galactosidase data
+
+Autopick
+Apix of 1.77 Å
+LoG, 50 inner, 250 outer, 0.5 threshold
+216 box size, downsampled to 128 for 2DC
+350 Å mask diameter during 2DC
+50 classes

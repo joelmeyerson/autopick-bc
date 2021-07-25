@@ -11,7 +11,8 @@ from PIL import Image
 from progress.bar import Bar
 
 # local imports
-from support_modules import extract_star_meta
+#from support_modules import extract_star_meta
+import extract_star_meta
 
 def gen_grid():
     
