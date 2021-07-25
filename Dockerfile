@@ -8,22 +8,22 @@ ENV PATH="/opt/miniconda/bin:${PATH}"
 ENV CONDAENV="apbc"
 
 # copy python scripts to image
-COPY ./gen_data.py /usr/local/bin
-RUN chmod +x /usr/local/bin/gen_data.py
-COPY ./gen_model.py /usr/local/bin
-RUN chmod +x /usr/local/bin/gen_model.py
-COPY ./gen_grid.py /usr/local/bin
-RUN chmod +x /usr/local/bin/gen_grid.py
-COPY ./gen_picks.py /usr/local/bin
-RUN chmod +x /usr/local/bin/gen_picks.py
-COPY ./show_picks.py /usr/local/bin
-RUN chmod +x /usr/local/bin/show_picks.py
-COPY ./extract_particles.py /usr/local/bin
-RUN chmod +x /usr/local/bin/extract_particles.py
-COPY ./extract_star_meta.py /usr/local/bin
-RUN chmod +x /usr/local/bin/extract_star_meta.py
-COPY ./save_results.py /usr/local/bin
-RUN chmod +x /usr/local/bin/save_results.py
+COPY ./gen_data.py /app
+RUN chmod +x /app/gen_data.py
+COPY ./gen_model.py /app
+RUN chmod +x /app/gen_model.py
+COPY ./gen_grid.py /app
+RUN chmod +x /app/gen_grid.py
+COPY ./gen_picks.py /app
+RUN chmod +x /app/gen_picks.py
+COPY ./show_picks.py /app
+RUN chmod +x /app/show_picks.py
+COPY ./extract_particles.py /app
+RUN chmod +x /app/extract_particles.py
+COPY ./extract_star_meta.py /app
+RUN chmod +x /app/extract_star_meta.py
+COPY ./save_results.py /app
+RUN chmod +x /app/save_results.py
 
 # install curl
 RUN apt-get update && apt-get install curl -y \
