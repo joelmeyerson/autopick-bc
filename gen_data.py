@@ -6,8 +6,6 @@ import argparse
 import numpy as np
 
 # local imports
-#from support_modules import extract_particles
-#from support_modules import extract_star_meta
 import extract_particles
 import extract_star_meta
 

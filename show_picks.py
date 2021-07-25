@@ -65,8 +65,8 @@ def show_picks():
     for el in coords:
         x = el[0]
         y = el[1]
-        #draw.ellipse([x-box/4, y-box/4, x+box/4, y+box/4], fill=None, outline='black', width=CIRCLE_LINE_WIDTH) # make circle 1/2 box size
-        draw.ellipse([x-box/2, y-box/2, x+box/2, y+box/2], fill=None, outline='black', width=CIRCLE_LINE_WIDTH) # make circle full box size
+        draw.ellipse([x-box/4, y-box/4, x+box/4, y+box/4], fill=None, outline='black', width=CIRCLE_LINE_WIDTH) # make circle 1/2 box size
+        #draw.ellipse([x-box/2, y-box/2, x+box/2, y+box/2], fill=None, outline='black', width=CIRCLE_LINE_WIDTH) # make circle full box size
         
     # write png
     mrc_base = str(args.image.split('/')[-1].split('.')[0])

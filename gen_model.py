@@ -18,7 +18,6 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, BatchNormalization
 from tensorflow.keras.layers import Activation, Flatten, Dense, Dropout
 
 # local imports
-#from support_modules import save_results
 import save_results
 
 # disable GPU

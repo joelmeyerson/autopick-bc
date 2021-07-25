@@ -64,7 +64,7 @@ def gen_picks():
     mrc_stack_idx = data_cols.index('_rlnImageName')
     
     # get box size by reading in a particle stack
-    mrc_path = data[0][mrc_stack_idx].split("@")[1] # this will get the first meta line in the star file, and then use the idx to get the MRC stack path
+    mrc_path = data[0][mrc_stack_idx].split("@")[1] # this will get the first meta line in the star file, and then use idx to get the MRC stack path
     mrc = mrcfile.open(mrc_path, mode=u'r', permissive=False, header_only=False)
     box = len(mrc.data[0,:,:][0])
     mrc.close()
