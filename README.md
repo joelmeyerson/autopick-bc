@@ -85,6 +85,8 @@ The Scheres lab Beta-galactosidase dataset (EMPIAR-10017) was used for developme
 
 `python gen_model.py -p /path/to/relion/project`
 
+![alt text](https://github.com/joelmeyerson/autopick-bc/blob/main/img/train_and_test_results.png?raw=true)
+
 ### Results with Beta-galactosidase data
 
 The Beta-galactosidase dataset was also tested without manually labeled data. In this test, images were subjected to LoG autopick, 2D classification and averaging, and "good" and "bad" particle subsets were used to train a new binary classifier model. After classification, images were segmented using a sliding window (grid), and then the classifier model was used to look for true and false particles. The true particles were then used for structure determination.
