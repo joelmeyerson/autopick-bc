@@ -1,7 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-# import json
-# import ast
 
 # TF imports
 import tensorflow as tf
@@ -9,21 +7,6 @@ from tensorflow import keras
 from tensorflow.keras import metrics
 
 def make_summary(path, train_log, test_labels, test_predictions):
-
-###################
-# TESTING
-# path = "/Users/joel/Desktop/"
-#
-# with open("../testing_results.txt", "r") as text_file:
-#     data = text_file.read()
-#     res = json.loads(data)
-#     test_labels = res['labels']
-#     test_predictions = res['predictions']
-#
-# with open("../training_log.txt", "r") as text_file:
-#     data = text_file.read()
-#     train_log = ast.literal_eval(data)
-###################
 
     fig, ax = plt.subplots(1,3)
     fig.set_size_inches(10, 3)
