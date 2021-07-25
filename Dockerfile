@@ -9,6 +9,24 @@ WORKDIR /app
 ENV PATH="/opt/miniconda/bin:${PATH}"
 ENV CONDAENV="apbc"
 
+# copy python scripts to image
+COPY ./gen_data.py /usr/local/bin
+RUN chmod +x /usr/local/bin/gen_data.py
+COPY ./gen_model.py /usr/local/bin
+RUN chmod +x /usr/local/bin/gen_model.py
+COPY ./gen_grid.py /usr/local/bin
+RUN chmod +x /usr/local/bin/gen_grid.py
+COPY ./gen_picks.py /usr/local/bin
+RUN chmod +x /usr/local/bin/gen_picks.py
+COPY ./show_picks.py /usr/local/bin
+RUN chmod +x /usr/local/bin/show_picks.py
+COPY ./extract_particles.py /usr/local/bin
+RUN chmod +x /usr/local/bin/extract_particles.py
+COPY ./extract_star_meta.py /usr/local/bin
+RUN chmod +x /usr/local/bin/extract_star_meta.py
+COPY ./save_results.py /usr/local/bin
+RUN chmod +x /usr/local/bin/save_results.py
+
 # install curl
 RUN apt-get update && apt-get install curl -y \
 
@@ -32,24 +50,6 @@ RUN apt-get update && apt-get install curl -y \
 && conda install -n ${CONDAENV} pillow=8.2.0 -y \
 && conda install -n ${CONDAENV} progress=1.5.0 -y \
 && conda install -c conda-forge -n ${CONDAENV} mrcfile=1.3.0 -y
-
-# copy python scripts to image
-COPY ./gen_data.py /usr/local/bin
-RUN chmod +x /usr/local/bin/gen_data.py
-COPY ./gen_model.py /usr/local/bin
-RUN chmod +x /usr/local/bin/gen_model.py
-COPY ./gen_grid.py /usr/local/bin
-RUN chmod +x /usr/local/bin/gen_grid.py
-COPY ./gen_picks.py /usr/local/bin
-RUN chmod +x /usr/local/bin/gen_picks.py
-COPY ./show_picks.py /usr/local/bin
-RUN chmod +x /usr/local/bin/show_picks.py
-COPY ./extract_particles.py /usr/local/bin
-RUN chmod +x /usr/local/bin/extract_particles.py
-COPY ./extract_star_meta.py /usr/local/bin
-RUN chmod +x /usr/local/bin/extract_star_meta.py
-COPY ./save_results.py /usr/local/bin
-RUN chmod +x /usr/local/bin/save_results.py
 
 # set up environment so container can be run non-interactively
 #ENTRYPOINT ["/bin/bash","/app/container-entrypoint.sh"]

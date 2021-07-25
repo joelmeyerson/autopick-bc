@@ -38,11 +38,13 @@ The parent image is the `tensorflow:latest-gpu` image. The Dockerfile specifies 
 
 `git clone https://github.com/joelmeyerson/autopick-bc.git` # clone the repository
 
-`docker build -t apbc ./autopick-bc/docker` # builds container called apbc
+`cd ./autopick-bc`
+
+`docker build -t apbc .` # builds container called apbc
 
 `cd < relion-project >` # where < relion-project > is the path to the Relion project directory
 
-`docker run --gpus all --rm -ti -v $(pwd):<relion-project> apbc` # launch interactive container
+`docker run --gpus all --rm -ti -v $(pwd):$(pwd) apbc` # launch interactive container
 
 `cd <relion-project>`
 
@@ -73,11 +75,48 @@ If installation fails using requirements.txt then it can be done with the includ
 
 The Scheres lab Beta-galactosidase dataset (EMPIAR-10017) was used for development and testing. All the images in the dataset were manually labeled with positive labels (particles) and negative labels (ice chunks, carbon, empty areas). Labels are stored in the `.box` format and found in the `autopick-bc/beta-galactosidase` directory.
 
+1. Created a new Relion project. Ran CTF estimation, imported box files, and extracted particles for "good" and "bad" coordinates. Examples of good and bad labels below.
+
+2. Create training/validation and test datasets. This step creates the `ClassBin` directory which holds the datasets. The inputs are the Relion project path, and the two particles.star files.
+
+`python gen_data.py -p /path/to/relion/project -g /path/to/good/particles.star -b /path/to/bad/particles.star`
+
+3. Train model. Creates a model (hd5) file and a file with the results of training/testing. The only input is the Relion project path.
+
+`python gen_model.py -p /path/to/relion/project`
+
 ### Results with Beta-galactosidase data
 
-Autopick
-Apix of 1.77 Å
-LoG, 50 inner, 250 outer, 0.5 threshold
-216 box size, downsampled to 128 for 2DC
-350 Å mask diameter during 2DC
-50 classes
+The Beta-galactosidase dataset was also tested without manually labeled data. In this test, images were subjected to LoG autopick, 2D classification and averaging, and "good" and "bad" particle subsets were used to train a new binary classifier model. After classification, images were segmented using a sliding window (grid), and then the classifier model was used to look for true and false particles. The true particles were then used for structure determination.
+
+In Relion run autopick and generate 2D class averages. Settings were taken from the Relion tutorial on Beta-galactosidase (LoG autopick: 150 Å inner diameter; 180 Å outer diameter; 5 upper threshold. Particle extraction: 256 box size; 64 binned box size. 2DC: 50 classes; 350 Å mask diameter; no fast subsets). Select "good" and "bad" particles.
+
+`python gen_data.py -p /path/to/relion/project -g /path/to/good/particles.star -b /path/to/bad/particles.star`
+
+`python gen_model.py -p /path/to/relion/project`
+
+`python gen_grid.py -p /path/to/relion/project -i /path/to/micrograph.star -x boxsize`
+
+In Relion use the grid.star coordinate file to extract particles.
+
+`python gen_picks.py -p /path/to/relion/project -i /path/to/particles.star`
+
+Results of structure determination.
+
+TBD
+
+### Results with T20 proteasome data
+
+TBD
+
+### Conclusions
+
+TBD
+
+### Update goals
+
+Currently grid.star files are created and then used to extract particles which are in turn used for prediction. The extracted particles are read as MRC slices into memory in batches of 32 then provided to the model. A better approach would be to avoid grid.star files and Relion extraction and instead do the sliding window segmentation and batching together 
+
+Training/validation and testing datasets are created by converting MRC particles to PNG particles. This is inefficient because of data duplication, but has the advantage of making the data easily loadable into a TF Dataset using the image from dataset preprocessing tool. Inefficient data handling should be addressed.
+
+Data binning needs to be tested and implemented.
