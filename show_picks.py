@@ -5,7 +5,7 @@ import sys
 import re
 import numpy as np
 import mrcfile
-from PIL import Image, ImageEnhance, ImageDraw
+from PIL import Image, ImageEnhance, ImageDraw, ImageOps
 import argparse
 
 CONTRAST_FACTOR = 4
@@ -46,7 +46,7 @@ def show_picks():
     
     # process image
     img_array = np.flip(mrc.data, axis=0)
-    mrc.close()
+    #mrc.close()
     img_array = img_array + abs(img_array.min()) # make all 32 bit floating point pixel values >= 0
     img_array /= img_array.max() # normalize all pixels between 0 and 1
     img_array *= 255 # normalize all pixels between 0 and 255
@@ -54,19 +54,23 @@ def show_picks():
     img_base_name = args.image.split('/')[-1].split('.')[0] # get file base name
     image = Image.fromarray(img_array).convert("L")
     image = ImageEnhance.Contrast(image).enhance(CONTRAST_FACTOR)
+    image = image.transpose(Image.FLIP_TOP_BOTTOM)
+    #image = ImageOps.mirror(image)
     
     # initialize image for drawing coords
     draw = ImageDraw.Draw(image)   
     
     box = get_box(args.star)
+    #box = 216 # for testing
     coords = get_coords(args.image, args.star)
     
     # draw coordinates
     for el in coords:
         x = el[0]
         y = el[1]
-        draw.ellipse([x-box/4, y-box/4, x+box/4, y+box/4], fill=None, outline='black', width=CIRCLE_LINE_WIDTH) # make circle 1/2 box size
-        #draw.ellipse([x-box/2, y-box/2, x+box/2, y+box/2], fill=None, outline='black', width=CIRCLE_LINE_WIDTH) # make circle full box size
+        
+        #draw.ellipse([x-box/4, y-box/4, x+box/4, y+box/4], fill=None, outline='black', width=CIRCLE_LINE_WIDTH) # make circle 1/2 box size
+        draw.ellipse([x-box/2, y-box/2, x+box/2, y+box/2], fill=None, outline='black', width=CIRCLE_LINE_WIDTH) # make circle full box size
         
     # write png
     mrc_base = str(args.image.split('/')[-1].split('.')[0])
@@ -116,21 +120,36 @@ def get_coords(mrc, star):
     y_idx = 0
     x = 0.0
     y = 0.0
+    in_loop = False
     with open(star, "r") as openfile:
         for line in openfile:
-
+            
+            # in loop_ section?
+            if (re.search(r'loop_', line) and in_loop == False):
+                in_loop = True
+            
             # find the header entry which contain X and Y coordinates
             if re.search(r'_rlnCoordinateX', line):
                 x_idx = int(str(line.split()[1]).strip("#"))
-
+                
             if re.search(r'_rlnCoordinateY', line):
                 y_idx = int(str(line.split()[1]).strip("#"))
-                
+            
+            # if line has mrc_base and @ sign then it's a particle.star file
+            #if (re.search(rf"{mrc_base}", line) and re.search(r'@', line)):
             if re.search(rf"{mrc_base}", line):
                 if x_idx + y_idx > 0:
                     x = float(line.split()[x_idx-1])
                     y = float(line.split()[y_idx-1])
                     coords.append([x,y])
+                   
+            # if inside loop_ section and the line does not have underscore then is a _picks.star file
+            #elif (in_loop == True and not re.search(r'_', line)):
+            #    if x_idx + y_idx > 0:
+            #        x = float(line.split()[x_idx-1])
+            #        y = float(line.split()[y_idx-1])
+            #        coords.append([x,y])
+               
     return coords     
 
 if __name__ == "__main__":

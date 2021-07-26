@@ -75,15 +75,17 @@ If installation fails using requirements.txt then it can be done with the includ
 
 The Scheres lab Beta-galactosidase dataset (EMPIAR-10017) was used for development and testing. All the images in the dataset were manually labeled with positive labels (particles) and negative labels (ice chunks, carbon, empty areas). Labels are stored in the `.box` format and found in the `autopick-bc/beta-galactosidase` directory.
 
+![alt text](https://github.com/joelmeyerson/autopick-bc/blob/main/img/pos_and_neg_labels.png?raw=true)
+
 1. Created a new Relion project. Ran CTF estimation, imported box files, and extracted particles for "good" and "bad" coordinates. Examples of good and bad labels below.
 
 2. Create training/validation and test datasets. This step creates the `ClassBin` directory which holds the datasets. The inputs are the Relion project path, and the two particles.star files.
 
-`python gen_data.py -p /path/to/relion/project -g /path/to/good/particles.star -b /path/to/bad/particles.star`
+`python /app/gen_data.py -p /path/to/relion/project -g /path/to/good/particles.star -b /path/to/bad/particles.star`
 
 3. Train model. Creates a model (hd5) file and a file with the results of training/testing. The only input is the Relion project path.
 
-`python gen_model.py -p /path/to/relion/project`
+`python /app/gen_model.py -p /path/to/relion/project`
 
 ![alt text](https://github.com/joelmeyerson/autopick-bc/blob/main/img/train_and_test_results.png?raw=true)
 
