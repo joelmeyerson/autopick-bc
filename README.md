@@ -18,7 +18,7 @@ Autopick-BC was designed to be incorporated in any new or existing Relion projec
 
 3. Select good and bad classes in the Relion GUI and save them in different `particles.star` files. For example, `particles_good.star` and `particles_bad.star`. 
 
-4. Generate training/validation and testing datasets from the good and bad particle star files (XX%/XX% and XX% of the data). The outputs are `train` and `test` directories containing particle images. This step uses `gen_data.py`.
+4. Generate training/validation and testing datasets from the good and bad particle star files. A 80/20 split is used for training/testing, and training is in turn divided with an 80/20 split to create a validation subset (64%/16% of the total particles). The outputs are `train` and `test` directories containing particle images. This step uses `gen_data.py`.
 
 5. Train a classification model to predict whether a particle is `good` or `bad`. The output is `model.h5`. This step uses `gen_model.py`.
 
@@ -115,16 +115,22 @@ The prediction results were evalualated by inspecting overlays of the coordinate
 
 ### Results with urease data
 
-A dataset with jackbean urease (EMPIAR-10656) was tested. A subset of XXXXXXX images were selected for processing. The images are super-resolution with 0.5175 Å pixel size (super-resolution) and were two-fold binned to 1.035 Å pixel size before importing into Relion. Particles were autopicked (LoG: 120 Å inner diameter; 130 Å outer diameter; 5 upper threshold), extracted with a box size of 224 downsampled to 64, and processed with 2D classification and averaging. From the results XXXXX "good" and XXXXX "bad" particles were selected for training and testing.
+A dataset with jackbean urease (EMPIAR-10656) was tested. A subset of 37 images were selected for processing. The images are super-resolution with 0.5175 Å pixel size (super-resolution) and were two-fold binned to 1.035 Å pixel size before importing into Relion. Particles were autopicked (LoG: 120 Å inner diameter; 130 Å outer diameter; 5 upper threshold), extracted with a box size of 224 downsampled to 64, and processed with 2D classification and averaging. From the results 3,543 "good" and 877 "bad" particles were selected for training and testing.
+
+![alt text](https://github.com/joelmeyerson/autopick-bc/blob/main/img/urease-train_and_test_results.png?raw=true) 
+
+A total of 333,000 particles were predicted by the model. Inspection of the true and false particle coordinates suggested a low rate of false positives, but also showed a poor ability to detect true positives.
 
 ### Conclusions
 
-The rationale for this approach is that it could help improve recovery of true positive particles. The results show that a CNN can be readily trained to discriminate between particle and non-particle. However, the sliding window segmentation and prediction does not appear to yield optimal results. This is evident from displaying coordinates for particles predicted to be positive or negative overlayed on the cryo-EM images. This shows that many are true positives and true negatives, but there are also many false positives and negatives. A key impression is that for many true positives the segment (box) is well centered on the particle. This suggests that the model was not good at coping with off-centered particles. Data augmentation with an added offset did not seem to help this, but more testing is needed. Another impression is that using four-fold binned particles for training tends to give better training statistics but this also needs more testing.
+The rationale for this approach is that it could help improve recovery of true positive particles. The results show that a CNN can be readily trained to discriminate between particle and non-particle. However, the sliding window segmentation and prediction do not appear to yield optimal results. This is evident from displaying coordinates for particles predicted to be positive or negative overlayed on the cryo-EM images. The model correctly predicts many true positives and true negatives, but there are also many false positives and negatives. A key impression is that for many true positives the segment (box) is well centered on the particle. This suggests that the model was not good at coping with off-centered particles. Data augmentation with an added offset did not seem to help this, but more testing is needed. Another impression is that using four-fold binned particles for training tends to give better training statistics, but this also needs more testing. The datasets tested here are both "ideal" in the sense that the particles have high symmetry, are large and rigid, and are generally well-selected using standard LoG and template based approaches. The particles fields in the images are also dense with particles, which limits the number of potential false positives during autopicking. For these reasons it would be valuable to test datasets that are less ideal and therefore more challenging to traditional particle picking methods.
 
 ### Limitations and update goals
 
-Currently grid.star files are created and then used to extract particles which are in turn used for prediction. The extracted particles are read as MRC slices into memory in batches of 32 then provided to the model. A better approach would be to avoid grid.star files and Relion extraction and instead do the sliding window segmentation and batching together at run time.
+Currently only ideal datasets have been tested. It will be valuable to test more challenging datasets followed by 3D structure determination.
 
 Training/validation and testing datasets are created by converting MRC particles to PNG particles. This is inefficient because of data duplication, but has the advantage of making the data easily loadable into a TF Dataset using the image from dataset preprocessing tool. Inefficient data handling should be addressed.
+
+Currently grid.star files are created and then used to extract particles which are in turn used for prediction. The extracted particles are read as MRC slices into memory in batches of 32 then provided to the model. A better approach would be to avoid grid.star files and Relion extraction and instead do the sliding window segmentation and batching together at run time.
 
 Currently single models are generated during/training testing and no hyperparameters are tested. This should be addressed by adding some sort of ensemble training/testing.
