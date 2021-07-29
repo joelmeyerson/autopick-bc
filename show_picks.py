@@ -9,8 +9,8 @@ from PIL import Image, ImageEnhance, ImageDraw, ImageOps
 import argparse
 
 CONTRAST_FACTOR = 4
+BRIGHTNESS_FACTOR= 100
 CIRCLE_LINE_WIDTH = 10
-BIN_FACTOR = 2
 
 def show_picks():
 
@@ -19,6 +19,7 @@ def show_picks():
     parser.add_argument('-p', '--projpath', type=str, help='path for project', required=True)
     parser.add_argument('-m', '--image', type=str, help='image file in mrc format', required=True)
     parser.add_argument('-s', '--star', type=str, help='input star file coordinates to visualize', required=True)
+    parser.add_argument('-z', '--binfactor', type=float, help='binning factor used in particle extraction (e.g. 256-->64 is 4)', required=False)
     #parser.add_argument('-o', '--output', type=str, help='file name with png extension', required=False)
     args = parser.parse_args()
     
@@ -44,6 +45,11 @@ def show_picks():
     if os.path.exists(png_dir) == False:
         os.mkdir(png_dir)
     
+    # set bin factor
+    bin_fac = 1
+    if type(args.binfactor) == float:
+        bin_fac = args.binfactor
+    
     # process image
     img_array = np.flip(mrc.data, axis=0)
     #mrc.close()
@@ -54,13 +60,14 @@ def show_picks():
     img_base_name = args.image.split('/')[-1].split('.')[0] # get file base name
     image = Image.fromarray(img_array).convert("L")
     image = ImageEnhance.Contrast(image).enhance(CONTRAST_FACTOR)
+    image = ImageEnhance.Contrast(image).enhance(BRIGHTNESS_FACTOR)
     image = image.transpose(Image.FLIP_TOP_BOTTOM)
     #image = ImageOps.mirror(image)
     
     # initialize image for drawing coords
     draw = ImageDraw.Draw(image)   
     
-    box = get_box(args.star)
+    box = get_box(args.star) * bin_fac
     #box = 216 # for testing
     coords = get_coords(args.image, args.star)
     

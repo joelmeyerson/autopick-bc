@@ -81,7 +81,8 @@ def gen_picks():
     batch_star = [] # for each batch store the lines for particle star file (32 entries)
     
     # create progress bar
-    bar = Bar('\nProcessing ' + str(par_cnt) + ' samples in ' + str(batch_num) + ' batches:', fill='#', suffix='%(percent)d%%', max=batch_num)
+    print('\n')
+    bar = Bar('Processing ' + str(par_cnt) + ' samples in ' + str(batch_num) + ' batches:', fill='#', suffix='%(percent)d%%', max=batch_num)
 
     # each round of loop will predict on a batch
     for batch_cnt in range(0,batch_num):

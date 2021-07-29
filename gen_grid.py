@@ -22,7 +22,7 @@ def gen_grid():
     parser.add_argument('-p', '--projpath', type=str, help='path for project', required=True)
     parser.add_argument('-i', '--imagestar', type=str, help='micrograph.star for the target micrographs)', required=True)
     #parser.add_argument('-m', '--metastar', type=str, help='any particle star file containing the target box size', required=True)
-    parser.add_argument('-x', '--boxsize', type=int, help='box size (must match box size used for training/testing.)', required=True)
+    parser.add_argument('-x', '--boxsize', type=int, help='box size (must match the unbinned box size used for training/testing (e.g. 256 not 64).', required=True)
     args = parser.parse_args()
     
     # configure working directory
