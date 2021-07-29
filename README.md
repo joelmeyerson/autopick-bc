@@ -1,6 +1,6 @@
 ## Autopick-BC
 
-Classification module for protein image detection in cryo-EM data. The project uses TensorFlow and can be run using the provided Docker container or it can be installed locally with conda. It is designed to be used with the Relion cryo-EM image processing program. 
+Classification module for protein image detection in cryo-EM data. The project uses TensorFlow and can be run using the provided Docker image or it can be installed locally with conda. It is designed to be used with the Relion cryo-EM image processing program. 
 
 ### Description
 
@@ -115,7 +115,7 @@ The prediction results were evalualated by inspecting overlays of the coordinate
 
 ### Results with urease data
 
-A dataset with jackbean urease (EMPIAR-10656) was tested. A subset of 37 images were selected for processing. The images are super-resolution with 0.5175 Å pixel size (super-resolution) and were two-fold binned to 1.035 Å pixel size before importing into Relion. Particles were autopicked (LoG: 120 Å inner diameter; 130 Å outer diameter; 5 upper threshold), extracted with a box size of 224 downsampled to 64, and processed with 2D classification and averaging. From the results 3,543 "good" and 877 "bad" particles were selected for training and testing.
+A dataset with jackbean urease (EMPIAR-10656) was tested. A subset of 37 images were selected for processing. The images are super-resolution with 0.5175 Å pixel size (super-resolution) and were two-fold binned to 1.035 Å pixel size before importing into Relion. Particles were autopicked (LoG: 120 Å inner diameter; 130 Å outer diameter; 5 upper threshold), extracted with a box size of 224 downsampled to 64, and processed with 2D classification and averaging. From the results 3,543 "good" and 877 "bad" particles were selected for training and testing.
 
 ![alt text](https://github.com/joelmeyerson/autopick-bc/blob/main/img/urease-train_and_test_results.png?raw=true) 
 
