@@ -95,6 +95,10 @@ The T20 proteasome dataset was tested (EMPIAR-10025). Motion-corrected super-res
 
 Subsets of good (51,504) and bad (19,396) particles were selected in Relion and used to build datasets for training/validation.
 
+![alt text](https://github.com/joelmeyerson/autopick-bc/blob/main/img/t20-classes.png?raw=true)
+
+Datasets were generated and processed as follows.
+
 `python gen_data.py -p /path/to/relion/project -g /path/to/good/particles.star -b /path/to/bad/particles.star`
 
 `python gen_model.py -p /path/to/relion/project`
@@ -116,6 +120,10 @@ The prediction results were evalualated by inspecting overlays of the coordinate
 ### Results with urease data
 
 A dataset with jackbean urease (EMPIAR-10656) was tested. A subset of 37 images were selected for processing. The images are super-resolution with 0.5175 Å pixel size (super-resolution) and were two-fold binned to 1.035 Å pixel size before importing into Relion. Particles were autopicked (LoG: 120 Å inner diameter; 130 Å outer diameter; 5 upper threshold), extracted with a box size of 224 downsampled to 64, and processed with 2D classification and averaging. From the results 3,543 "good" and 877 "bad" particles were selected for training and testing.
+
+![alt text](https://github.com/joelmeyerson/autopick-bc/blob/main/img/urease-classes.png?raw=true)
+
+Training and testing gave the following results.
 
 ![alt text](https://github.com/joelmeyerson/autopick-bc/blob/main/img/urease-train_and_test_results.png?raw=true) 
 
