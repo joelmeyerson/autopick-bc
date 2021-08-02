@@ -8,6 +8,8 @@ Single particle cryo-EM datasets contain large format images with hundreds of in
 
 Autopick-BC is designed as an additional step in a cryo-EM image processing pipeline. Rather than discarding the bad particles after 2D classification and averaging, it uses both the bad and good particles to train a binary classifier. After training, the classifier is used to re-pick particles from the original images to identify true and false particles. The rationale is that the approach may increase recovery of true positive particles and later improve 3D structural results.
 
+The image classification model is a basic CNN with four convolutional layers, four max pooling layers, two fully connected layers, and one sigmoid output layer. It uses ReLU activation, the Adam optimizer, binary crossentropy loss, dropout and early stopping. A random rotation of +/-20% is used in data augmentation.
+
 ### Procedure
 
 Autopick-BC was designed to be incorporated in any new or existing Relion project. In the Relion project directly it will make a ClassBin sub-directory to contain all associated data and metadata.
