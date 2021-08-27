@@ -1,6 +1,6 @@
 ## Autopick-BC
 
-Classification module for protein image detection in cryo-EM data. The project uses TensorFlow and can be run using the provided Docker image or it can be installed locally with conda. It is designed to be used with the Relion cryo-EM image processing program. 
+This is a classification module for protein image detection in cryo-EM data. The project uses TensorFlow and can be run using the provided Docker image or it can be installed locally with conda. It is designed to be used with the Relion cryo-EM image processing program. 
 
 ### Description
 
