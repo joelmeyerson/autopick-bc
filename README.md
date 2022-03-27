@@ -115,7 +115,7 @@ The results of model training/testing are shown below.
 
 ![alt text](https://github.com/joelmeyerson/autopick-bc/blob/main/img/t20-train_and_test_results.png?raw=true) 
 
-The prediction results were evalualated by inspecting overlays of the coordinates for true and false particles on cryo-EM images. The results show that many true positives were selected, but its clear some false negatives and false positives were also selected. It is notable that empty areas frequently do are not marked as positive, which suggests the model can successfully discriminate between true particles and empty areas. No further structural analysis was done. Two examples are shown below.
+The prediction results were evalualated by inspecting overlays of the coordinates for true and false particles on cryo-EM images. The results show that many true positives were selected, but it's clear some false negatives and false positives were also selected. It is notable that empty areas frequently do are not marked as positive, which suggests the model can successfully discriminate between true particles and empty areas. No further structural analysis was done. Two examples are shown below.
 
 ![alt text](https://github.com/joelmeyerson/autopick-bc/blob/main/img/t20-pos_and_neg_labels.png?raw=true) 
 
@@ -139,8 +139,11 @@ The rationale for this approach is that it could help improve recovery of true p
 
 Currently only ideal datasets have been tested. It will be valuable to test more challenging datasets followed by 3D structure determination.
 
+
 Training/validation and testing datasets are created by converting MRC particles to PNG particles. This is inefficient because of data duplication, but has the advantage of making the data easily loadable into a TF Dataset using the image from dataset preprocessing tool. Inefficient data handling should be addressed.
 
+
 Currently grid.star files are created and then used to extract particles which are in turn used for prediction. The extracted particles are read as MRC slices into memory in batches of 32 then provided to the model. A better approach would be to avoid grid.star files and Relion extraction and instead do the sliding window segmentation and batching together at run time.
+
 
 Currently single models are generated during/training testing and no hyperparameters are tested. This should be addressed by adding some sort of ensemble training/testing.
